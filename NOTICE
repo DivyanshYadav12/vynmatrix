@@ -1,0 +1,33 @@
+# vynmatrix notices
+
+## License
+
+[LICENSE](LICENSE) is the complete and controlling license. vynmatrix is
+publicly source-available under its personal, noncommercial reciprocity terms;
+it is not an OSI-approved open-source license. The canonical repository is
+<https://github.com/vynaptic/vynmatrix>.
+
+## Copyright and attribution
+
+Copyright (c) 2024-2026 VisionMaverick. Copyright, license, and attribution
+notices in individual files and dependencies remain in effect. The `vynaptic`
+GitHub account maintains this repository and does not replace or transfer
+retained copyright.
+
+## Third-party and fixture provenance
+
+The project license does not grant rights in third-party materials. Confirm the
+applicable terms before separately redistributing or relying beyond their
+recorded test purpose on either of these incomplete records:
+
+- `config/universe/sp500_membership_full.csv` has a source label but no exact
+  source revision or reuse record.
+- `tests/fixtures/market_data/` contains frozen Coinbase-related fixtures with
+  incomplete capture and redistribution records.
+- The ten Backtrader ports identified in `docs/STRATEGY_READINESS.md` retain source
+  hashes and manual references from the local `backtrader_strategies` collection.
+  No verified license or attribution record is attached to these source bindings;
+  local porting and reference captures do not resolve redistribution provenance.
+
+[docs/MIGRATION.md](docs/MIGRATION.md) records the historical review and the
+remaining provenance work.

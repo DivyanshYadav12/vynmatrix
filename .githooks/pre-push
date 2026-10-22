@@ -1,0 +1,12 @@
+#!/usr/bin/env sh
+
+# Block direct pushes to origin/main. GitHub enforces the same rule remotely.
+while read -r local_ref local_sha remote_ref remote_sha; do
+  if [ "$remote_ref" = "refs/heads/main" ]; then
+    echo "ERROR: Direct push to origin/main is blocked."
+    echo "Workflow: commit locally on main, then run: git mr submit"
+    exit 1
+  fi
+done
+
+exit 0

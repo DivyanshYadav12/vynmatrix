@@ -1,0 +1,20 @@
+# One application artifact; PostgreSQL is the only other runtime image.
+# Compose selects process groups; packaging never grants strategy activation.
+services:
+- name: platform
+  app: platform_runtime
+  dockerfile: docker/platform_runtime.Dockerfile
+  image: vynmatrix/platform
+  port: 8090
+
+strategy_discovery:
+  scan_paths:
+  - strategies/indicator/*/core.py  # signal_worker cores (no main.py post-LEAN)
+  metadata_sources:
+  - config.json
+  - strategy metadata
+  classification:
+    by_asset_class: true
+    by_strategy_type: true
+    by_tags: true
+    by_dependencies: false
