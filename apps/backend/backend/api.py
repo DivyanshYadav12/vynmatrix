@@ -10,6 +10,7 @@ from decimal import Decimal
 from typing import Any, Literal
 
 from fastapi import Depends, FastAPI, Header, HTTPException, Request
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import (
     AnyHttpUrl,
@@ -590,6 +591,16 @@ def create_app(  # noqa: PLR0915
         version="0.1.0",
         service_auth=False,
     )
+    
+    # Add CORS middleware for frontend development
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+    
     app.router.dependencies.append(Depends(_reject_owner_query))
 
     @app.exception_handler(BindingControlError)
