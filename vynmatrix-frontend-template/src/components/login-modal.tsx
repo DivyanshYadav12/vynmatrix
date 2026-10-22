@@ -18,22 +18,29 @@ export function LoginModal({ onSuccess }: LoginModalProps) {
     setLoading(true);
 
     try {
-      // TEMPORARY: Skip backend validation for UI testing
-      // TODO: Re-enable backend validation once backend is running
-      // const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:8081"}/api/ui/version`, {
-      //   headers: {
-      //     "X-Admin-Key": key,
-      //   },
-      // });
+      const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:8081";
+      console.log("Attempting to connect to:", apiUrl);
+      
+      // Validate the key by making a test request
+      const response = await fetch(`${apiUrl}/api/ui/version`, {
+        headers: {
+          "X-Admin-Key": key,
+        },
+      });
 
-      // if (!response.ok) {
-      //   throw new Error("Invalid admin key");
-      // }
+      console.log("Response status:", response.status);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Authentication failed:", errorText);
+        throw new Error(`Invalid admin key (status: ${response.status})`);
+      }
 
       // Store the key in sessionStorage
       setAdminKey(key);
       onSuccess();
     } catch (err) {
+      console.error("Login error:", err);
       setError(err instanceof Error ? err.message : "Failed to authenticate");
     } finally {
       setLoading(false);
@@ -73,12 +80,6 @@ export function LoginModal({ onSuccess }: LoginModalProps) {
             {loading ? "Verifying..." : "Unlock"}
           </button>
         </form>
-
-        <div className="login-warning" style={{ marginTop: "12px", padding: "10px", background: "rgba(247, 198, 107, 0.1)", border: "1px solid var(--yellow)", borderRadius: "8px", fontSize: "11px", color: "var(--yellow)" }}>
-          <strong>⚠️ UI Testing Mode</strong><br />
-          Backend validation is temporarily disabled. Enter any key to test the UI layout.
-          Re-enable backend validation once the backend is running.
-        </div>
 
         <p className="login-note">
           The key stays in this browser tab only, is sent to this computer only, and is forgotten
