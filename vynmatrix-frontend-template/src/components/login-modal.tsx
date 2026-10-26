@@ -18,11 +18,8 @@ export function LoginModal({ onSuccess }: LoginModalProps) {
     setLoading(true);
 
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:8081";
-      console.log("Attempting to connect to:", apiUrl);
-      
-      // Validate the key by making a test request
-      const response = await fetch(`${apiUrl}/api/ui/version`, {
+      // Use relative path to leverage Next.js proxy rewrite
+      const response = await fetch("/api/ui/version", {
         headers: {
           "X-Admin-Key": key,
         },
