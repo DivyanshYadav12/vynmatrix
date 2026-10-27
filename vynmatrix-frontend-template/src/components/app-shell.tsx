@@ -74,9 +74,9 @@ export function AppShell({ children }: { children: ReactNode }) {
             ENGINE STATUS
           </div>
           <strong>
-            {backendConnected === true ? "All systems operational" : backendConnected === false ? "Backend unavailable" : "Checking..."}
+            {backendConnected === true ? "API reachable" : backendConnected === false ? "API unavailable" : "Checking API..."}
           </strong>
-          <p>API · Database · Workers</p>
+          <p>Worker health is not checked. Status is from the last API request.</p>
           <div className="health-bars"><i /><i /><i /><i /><i /><i /><i /><i /><i /><i /><i /><i /></div>
         </div>
         <div className="sidebar-footer"><div className="avatar">DY</div><div className="user-copy"><strong>Workspace owner</strong><span>Administrator</span></div><button className="icon-button" aria-label="Help"><CircleHelp size={17} /></button></div>
@@ -99,7 +99,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         </header>
         {searchOpen && <div className="search-popover"><Search size={16} /><input autoFocus placeholder="Search strategies, backtests, events..." onKeyDown={(e) => { if (e.key === "Escape") setSearchOpen(false); }} /><kbd>ESC</kbd></div>}
         <main className="main-content">{children}</main>
-        <footer className="app-footer"><span>Vynmatrix <span className="footer-muted">· Self-hosted quantitative research</span></span><span><span className="health-dot" /> API connected to demo data</span></footer>
+        <footer className="app-footer"><span>Vynmatrix <span className="footer-muted">· Self-hosted quantitative research</span></span><span>Owner API · Recorded data</span></footer>
       </div>
     </div>
   );

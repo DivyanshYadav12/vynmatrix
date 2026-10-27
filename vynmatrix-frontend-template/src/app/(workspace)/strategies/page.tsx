@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { ArrowRight, Blocks, MoreHorizontal, Search, TrendingUp } from "lucide-react";
 import { PageHeader, Panel, StatusBadge } from "@/components/ui";
 import { api, ApiError } from "@/lib/api-client";
+import { formatMoneyTotals } from "@/lib/money";
 import type { StrategiesData } from "@/lib/types";
 
 export default function StrategiesPage() {
@@ -46,15 +47,12 @@ export default function StrategiesPage() {
     return <div className="empty-state">No strategies available</div>;
   }
 
-  const activeStrategies = data.strategies.filter((s) => s.bindings.some((b) => b.mode === "trading"));
-
-  // Calculate total P&L grouped by currency
-  const pnlByCurrency = data.strategies.reduce((acc, strategy) => {
-    strategy.realized_pnl.forEach((pnl) => {
-      acc[pnl.currency] = (acc[pnl.currency] || 0) + parseFloat(pnl.value);
-    });
-    return acc;
-  }, {} as Record<string, number>);
+  const activeBindings = data.strategies.reduce((count, strategy) =>
+    count + strategy.bindings.filter((binding) => binding.active).length, 0);
+  const released = data.strategies.filter((strategy) => strategy.released).length;
+  const realizedPnl = data.strategies.some((strategy) => strategy.realized_pnl === null)
+    ? null
+    : data.strategies.flatMap((strategy) => strategy.realized_pnl ?? []);
 
   return (
     <>
@@ -67,25 +65,23 @@ export default function StrategiesPage() {
         <div className="metric-card">
           <div className="metric-top"><span>Total strategies</span><Blocks size={17} /></div>
           <div className="metric-value">{data.strategies.length.toString().padStart(2, "0")}</div>
-          <div className="metric-change">Released: {data.released.toString()}</div>
+          <div className="metric-change">Released: {released}</div>
         </div>
         <div className="metric-card">
           <div className="metric-top"><span>Active bindings</span><TrendingUp size={17} /></div>
-          <div className="metric-value">{activeStrategies.length.toString().padStart(2, "0")}</div>
+          <div className="metric-value">{activeBindings.toString().padStart(2, "0")}</div>
           <div className="metric-change">Running on accounts</div>
         </div>
         <div className="metric-card">
           <div className="metric-top"><span>Total P&L</span><ArrowRight size={17} /></div>
           <div className="metric-value">
-            {Object.entries(pnlByCurrency)
-              .map(([currency, value]) => `${value >= 0 ? "+" : ""}${currency} ${value.toLocaleString()}`)
-              .join(" · ")}
+            {formatMoneyTotals(realizedPnl, true)}
           </div>
           <div className="metric-change">Realized across all strategies</div>
         </div>
         <div className="metric-card">
           <div className="metric-top"><span>Catalogue</span><ArrowRight size={17} /></div>
-          <div className="metric-value">{data.catalogue.toString()}</div>
+          <div className="metric-value">{data.strategies.length}</div>
           <div className="metric-change">Available strategies</div>
         </div>
       </div>
@@ -133,16 +129,7 @@ export default function StrategiesPage() {
                     <span className="muted-number">{s.bindings.length} binding{s.bindings.length !== 1 ? "s" : ""}</span>
                   </td>
                   <td>
-                    {(() => {
-                      const strategyPnl = s.realized_pnl.reduce((sum, pnl) => sum + parseFloat(pnl.value), 0);
-                      return (
-                        <span className={strategyPnl >= 0 ? "positive-number" : "negative-number"}>
-                          {s.realized_pnl.length > 0
-                            ? `${strategyPnl >= 0 ? "+" : ""}${s.realized_pnl[0]?.currency || ""} ${strategyPnl.toLocaleString()}`
-                            : "—"}
-                        </span>
-                      );
-                    })()}
+                    <span>{formatMoneyTotals(s.realized_pnl, true)}</span>
                   </td>
                   <td>
                     <button className="icon-button" aria-label={`More actions for ${s.name}`}>

@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { Activity, ArrowRight, Blocks, ShieldCheck, TrendingUp } from "lucide-react";
 import { MetricCard, PageHeader, Panel, StatusBadge } from "@/components/ui";
 import { api, ApiError } from "@/lib/api-client";
+import { formatMoney, formatMoneyTotals } from "@/lib/money";
 import type { OverviewData } from "@/lib/types";
 
 export default function OverviewPage() {
@@ -51,18 +52,15 @@ export default function OverviewPage() {
   const greeting = new Date().getHours() < 12 ? "Good morning" : new Date().getHours() < 18 ? "Good afternoon" : "Good evening";
   const today = new Date().toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" }).toUpperCase();
 
-  // Calculate total equity grouped by currency
-  const equityByCurrency = data.accounts.reduce((acc, account) => {
-    const equity = account.equity?.value;
-    if (equity) {
-      const currency = account.currency;
-      acc[currency] = (acc[currency] || 0) + parseFloat(equity);
-    }
-    return acc;
-  }, {} as Record<string, number>);
-
-  const totalFills = data.accounts.reduce((sum, acc) => sum + acc.fills, 0);
-  const totalPositions = data.accounts.reduce((sum, acc) => sum + acc.open_positions, 0);
+  const equity = formatMoneyTotals(data.accounts.map((account) => ({
+    currency: account.currency, value: account.equity?.value,
+  })));
+  const totalFills = data.accounts.some((account) => account.fills === null)
+    ? "Unavailable"
+    : data.accounts.reduce((sum, account) => sum + (account.fills ?? 0), 0).toString();
+  const totalPositions = data.accounts.some((account) => account.open_positions === null)
+    ? "Unavailable"
+    : data.accounts.reduce((sum, account) => sum + (account.open_positions ?? 0), 0).toString();
 
   return (
     <>
@@ -81,30 +79,28 @@ export default function OverviewPage() {
       <div className="metrics-grid">
         <MetricCard
           label="Total equity"
-          value={Object.entries(equityByCurrency)
-            .map(([currency, value]) => `${currency} ${value.toLocaleString()}`)
-            .join(" · ")}
+          value={equity}
           change={`${data.accounts.length} account${data.accounts.length !== 1 ? "s" : ""}`}
           tone="blue"
           icon={<TrendingUp size={18} />}
         />
         <MetricCard
           label="Active strategies"
-          value={data.strategies.active.toString()}
-          change={`${data.strategies.bound} bound to accounts`}
+          value={data.strategies?.active.toString() ?? "Unavailable"}
+          change={data.strategies ? `${data.strategies.bound} bound to accounts` : "Bindings unavailable"}
           tone="green"
           icon={<Blocks size={18} />}
         />
         <MetricCard
           label="Open positions"
-          value={totalPositions.toString()}
+          value={totalPositions}
           change={`Across ${data.accounts.length} accounts`}
           tone="purple"
           icon={<Activity size={18} />}
         />
         <MetricCard
           label="Total fills"
-          value={totalFills.toString()}
+          value={totalFills}
           change="Recorded executions"
           tone="orange"
           icon={<ShieldCheck size={18} />}
@@ -126,7 +122,7 @@ export default function OverviewPage() {
                 </div>
                 <div className="strategy-health-status">
                   <StatusBadge tone={account.status === "active" ? "success" : "warning"}>{account.status}</StatusBadge>
-                  <span className="positive-number">{account.equity?.value ? `$${parseFloat(account.equity.value).toLocaleString()}` : "—"}</span>
+                  <span>{formatMoney(account.equity?.value, account.currency)}</span>
                 </div>
               </div>
             ))}

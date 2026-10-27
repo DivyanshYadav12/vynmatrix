@@ -62,6 +62,7 @@ export default function SettingsPage() {
         </nav>
         <div className="settings-content">
           <Panel title="Owner profile" subtitle="Account owner information">
+            {data.owner === null && <p role="status">Owner profile unavailable</p>}
             <div className="form-grid">
               <div className="form-field">
                 <label>Full name</label>
@@ -82,6 +83,7 @@ export default function SettingsPage() {
           </Panel>
 
           <Panel title="Broker accounts" subtitle="Connected broker accounts and credentials">
+            {data.accounts === null && <p role="status">Broker accounts unavailable</p>}
             <div className="table-scroll">
               <table className="data-table">
                 <thead>
@@ -95,7 +97,7 @@ export default function SettingsPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {data.accounts.map((account) => (
+                  {data.accounts?.map((account) => (
                     <tr key={account.account_id}>
                       <td>
                         <div className="table-primary">
@@ -128,7 +130,8 @@ export default function SettingsPage() {
             </div>
           </Panel>
 
-          <Panel title="Strategy bindings" subtitle="Active strategy-to-account bindings">
+          <Panel title="Strategy bindings" subtitle="Recorded strategy-to-account execution modes">
+            {data.bindings === null && <p role="status">Strategy bindings unavailable</p>}
             <div className="table-scroll">
               <table className="data-table">
                 <thead>
@@ -137,24 +140,16 @@ export default function SettingsPage() {
                     <th>STRATEGY</th>
                     <th>ACCOUNT</th>
                     <th>MODE</th>
-                    <th>ACTIVE</th>
                     <th>MAX POSITION</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {data.bindings.map((binding) => (
+                  {data.bindings?.map((binding) => (
                     <tr key={binding.binding_id}>
                       <td><strong>#{binding.binding_id}</strong></td>
                       <td>{binding.strategy_id}</td>
                       <td>Account #{binding.account_id}</td>
-                      <td><span className="version-code">{binding.mode}</span></td>
-                      <td>
-                        {binding.mode === "trading" ? (
-                          <span className="positive-number">✓ Active</span>
-                        ) : (
-                          <span className="muted-number">Inactive</span>
-                        )}
-                      </td>
+                      <td><span className="version-code">{({ off: "Off", close_only: "Close only", trading: "Trading", custom: "Custom" } as Record<string, string>)[binding.mode] ?? binding.mode}</span></td>
                       <td>{(parseFloat(binding.max_position_pct) * 100).toFixed(1)}%</td>
                     </tr>
                   ))}

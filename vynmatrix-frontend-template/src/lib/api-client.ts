@@ -6,13 +6,19 @@
 import type { OverviewData, VersionData, ControlData, StrategiesData, PnLData, FillsData } from "./types";
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "/api";
+const AUTH_CHANGED = "vynmatrix-auth-changed";
+let volatileKey: string | null = null;
 
 /**
  * Get admin key from sessionStorage (stored only in the browser tab)
  */
 function getAdminKey(): string | null {
   if (typeof window === "undefined") return null;
-  return sessionStorage.getItem("adminKey");
+  try {
+    return window.sessionStorage.getItem("adminKey") || volatileKey;
+  } catch {
+    return volatileKey;
+  }
 }
 
 /**
@@ -20,7 +26,13 @@ function getAdminKey(): string | null {
  */
 export function setAdminKey(key: string): void {
   if (typeof window === "undefined") return;
-  sessionStorage.setItem("adminKey", key);
+  volatileKey = key;
+  try {
+    window.sessionStorage.setItem("adminKey", key);
+  } catch {
+    // Storage can be disabled; retain the key in this tab's memory only.
+  }
+  window.dispatchEvent(new Event(AUTH_CHANGED));
 }
 
 /**
@@ -28,14 +40,29 @@ export function setAdminKey(key: string): void {
  */
 export function clearAdminKey(): void {
   if (typeof window === "undefined") return;
-  sessionStorage.removeItem("adminKey");
+  volatileKey = null;
+  try {
+    window.sessionStorage.removeItem("adminKey");
+  } catch {
+    // Nothing was persisted when storage was unavailable.
+  }
+  window.dispatchEvent(new Event(AUTH_CHANGED));
 }
 
 /**
  * Check if user is authenticated
  */
 export function isAuthenticated(): boolean {
-  return getAdminKey() !== null;
+  return Boolean(getAdminKey());
+}
+
+export function subscribeAuthentication(onChange: () => void): () => void {
+  window.addEventListener(AUTH_CHANGED, onChange);
+  window.addEventListener("storage", onChange);
+  return () => {
+    window.removeEventListener(AUTH_CHANGED, onChange);
+    window.removeEventListener("storage", onChange);
+  };
 }
 
 /**
@@ -52,9 +79,10 @@ async function apiRequest<T>(
 
   // Add admin key from sessionStorage
   const adminKey = getAdminKey();
-  if (adminKey) {
+  if (adminKey && !headers.has("X-Admin-Key")) {
     headers.set("X-Admin-Key", adminKey);
   }
+  const requestKey = headers.get("X-Admin-Key");
 
   const response = await fetch(url, {
     ...options,
@@ -62,6 +90,7 @@ async function apiRequest<T>(
   });
 
   if (!response.ok) {
+    if (response.status === 401 && requestKey && requestKey === getAdminKey()) clearAdminKey();
     const error = await response.text().catch(() => "Unknown error");
     throw new ApiError(response.status, error);
   }
@@ -88,7 +117,9 @@ export class ApiError extends Error {
 export const api = {
   // Owner UI API endpoints
   overview: () => apiRequest<OverviewData>("/ui/overview"),
-  version: () => apiRequest<VersionData>("/ui/version"),
+  version: (key?: string) => apiRequest<VersionData>("/ui/version", {
+    headers: key === undefined ? undefined : { "X-Admin-Key": key },
+  }),
   control: () => apiRequest<ControlData>("/ui/control"),
   strategies: () => apiRequest<StrategiesData>("/ui/strategies"),
   pnl: (days: number = 90) => apiRequest<PnLData>(`/ui/pnl?days=${days}`),

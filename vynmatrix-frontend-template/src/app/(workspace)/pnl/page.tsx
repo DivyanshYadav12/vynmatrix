@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { TrendingUp } from "lucide-react";
 import { PageHeader, Panel } from "@/components/ui";
 import { api, ApiError } from "@/lib/api-client";
+import { formatAmount, formatMoney } from "@/lib/money";
 import type { PnLData } from "@/lib/types";
 
 export default function PnLPage() {
@@ -87,14 +88,12 @@ export default function PnLPage() {
             <div className="performance-summary">
               <div>
                 <strong>
-                  {account.realized_total
-                    ? `${parseFloat(account.realized_total) >= 0 ? "+" : ""}$${parseFloat(account.realized_total).toLocaleString()}`
-                    : "—"}
+                  {formatMoney(account.realized_total, account.currency, true)}
                 </strong>
                 <span>Realized P&L</span>
               </div>
-              <span className={account.realized_total && parseFloat(account.realized_total) >= 0 ? "positive-change" : "negative-change"}>
-                {account.equity?.value ? `$${parseFloat(account.equity.value).toLocaleString()}` : "—"}
+              <span>
+                {formatMoney(account.equity?.value, account.currency)}
               </span>
             </div>
 
@@ -117,9 +116,9 @@ export default function PnLPage() {
                         <tr key={idx}>
                           <td><strong>{pos.symbol}</strong></td>
                           <td>{pos.quantity}</td>
-                          <td>${parseFloat(pos.average_price).toFixed(2)}</td>
-                          <td>${parseFloat(pos.last_mark).toFixed(2)}</td>
-                          <td>${parseFloat(pos.notional).toLocaleString()} {pos.notional_currency}</td>
+                          <td>{formatAmount(pos.average_price)}{pos.average_price !== null && " · Quote currency unavailable"}</td>
+                          <td>{formatAmount(pos.last_mark)}{pos.last_mark !== null && " · Quote currency unavailable"}</td>
+                          <td>{formatMoney(pos.notional, pos.notional_currency)}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -140,8 +139,8 @@ export default function PnLPage() {
                         <span>{item.symbol}</span>
                       </div>
                       <div className="strategy-health-status">
-                        <span className={parseFloat(item.value) >= 0 ? "positive-number" : "negative-number"}>
-                          {parseFloat(item.value) >= 0 ? "+" : ""}${parseFloat(item.value).toLocaleString()}
+                        <span className={item.value?.startsWith("-") ? "negative-number" : "positive-number"}>
+                          {formatMoney(item.value, account.currency, true)}
                         </span>
                       </div>
                     </div>

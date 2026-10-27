@@ -1,13 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { clearAdminKey, setAdminKey } from "@/lib/api-client";
+import { api, clearAdminKey, setAdminKey } from "@/lib/api-client";
 
-interface LoginModalProps {
-  onSuccess: () => void;
-}
-
-export function LoginModal({ onSuccess }: LoginModalProps) {
+export function LoginModal() {
   const [key, setKey] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -18,26 +14,9 @@ export function LoginModal({ onSuccess }: LoginModalProps) {
     setLoading(true);
 
     try {
-      // Use relative path to leverage Next.js proxy rewrite
-      const response = await fetch("/api/ui/version", {
-        headers: {
-          "X-Admin-Key": key,
-        },
-      });
-
-      console.log("Response status:", response.status);
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error("Authentication failed:", errorText);
-        throw new Error(`Invalid admin key (status: ${response.status})`);
-      }
-
-      // Store the key in sessionStorage
+      await api.version(key);
       setAdminKey(key);
-      onSuccess();
     } catch (err) {
-      console.error("Login error:", err);
       setError(err instanceof Error ? err.message : "Failed to authenticate");
     } finally {
       setLoading(false);
@@ -90,7 +69,6 @@ export function LoginModal({ onSuccess }: LoginModalProps) {
 export function LockButton() {
   function handleLock() {
     clearAdminKey();
-    window.location.reload();
   }
 
   return (

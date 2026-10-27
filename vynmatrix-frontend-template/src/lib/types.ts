@@ -31,15 +31,15 @@ export interface OverviewData {
       value: string | null;
       as_of: string | null;
     } | null;
-    open_positions: number;
-    fills: number;
+    open_positions: number | null;
+    fills: number | null;
   }>;
   strategies: {
     catalogue: number;
     released: number;
     bound: number;
     active: number;
-  };
+  } | null;
   freshness: {
     price_feeds: Array<{
       timeframe: string;
@@ -68,8 +68,6 @@ export interface OverviewData {
 
 export interface StrategiesData {
   as_of: string;
-  catalogue: number;
-  released: number;
   strategies: Array<{
     strategy_id: string;
     name: string;
@@ -83,6 +81,7 @@ export interface StrategiesData {
       account_id: number;
       account_name: string | null;
       mode: string;
+      active: boolean;
       autopilot: boolean;
       entries_enabled: boolean;
       exits_enabled: boolean;
@@ -96,7 +95,7 @@ export interface StrategiesData {
       account_id: number;
       currency: string;
       value: string;
-    }>;
+    }> | null;
   }>;
 }
 
@@ -132,10 +131,10 @@ export interface PnLData {
     positions: Array<{
       symbol: string;
       quantity: string;
-      average_price: string;
-      last_mark: string;
-      notional: string;
-      notional_currency: string;
+      average_price: string | null;
+      last_mark: string | null;
+      notional: string | null;
+      notional_currency: string | null;
       as_of: string;
     }> | null;
     fees: Array<{
@@ -148,10 +147,10 @@ export interface PnLData {
 export interface ControlData {
   as_of: string;
   owner: {
-    full_name: string;
+    full_name: string | null;
     base_ccy: string;
     tz: string;
-  };
+  } | null;
   accounts: Array<{
     account_id: number;
     config_key: string;
@@ -169,7 +168,7 @@ export interface ControlData {
       status: string | null;
       expires_at: string | null;
     };
-  }>;
+  }> | null;
   bindings: Array<{
     binding_id: number;
     strategy_id: string;
@@ -182,7 +181,7 @@ export interface ControlData {
     max_open_positions: number;
     instruments_allowed: string[] | null;
     asset_classes_allowed: string[];
-  }>;
+  }> | null;
   strategies: Array<{
     strategy_id: string;
     name: string;
@@ -194,7 +193,7 @@ export interface ControlData {
     action: string;
     status: string;
     fields: string[];
-  }>;
+  }> | null;
   modes: string[];
   limits: Record<string, {
     min: string;
