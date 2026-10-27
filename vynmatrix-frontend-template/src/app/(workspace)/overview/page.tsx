@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Activity, ArrowRight, ArrowUpRight, Blocks, ShieldCheck, TrendingUp, X } from "lucide-react";
+import { Activity, ArrowRight, Blocks, ShieldCheck, TrendingUp } from "lucide-react";
 import { MetricCard, PageHeader, Panel, StatusBadge } from "@/components/ui";
 import { api, ApiError } from "@/lib/api-client";
 import type { OverviewData } from "@/lib/types";
@@ -51,16 +51,15 @@ export default function OverviewPage() {
   const greeting = new Date().getHours() < 12 ? "Good morning" : new Date().getHours() < 18 ? "Good afternoon" : "Good evening";
   const today = new Date().toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" }).toUpperCase();
 
-  // Calculate total equity and P&L
-  const totalEquity = data.accounts.reduce((sum, acc) => {
-    const equity = acc.equity?.value;
-    return equity ? sum + parseFloat(equity) : sum;
-  }, 0);
-
-  const totalPnl = data.accounts.reduce((sum, acc) => {
-    const pnl = acc.realized_pnl?.value;
-    return pnl ? sum + parseFloat(pnl) : sum;
-  }, 0);
+  // Calculate total equity grouped by currency
+  const equityByCurrency = data.accounts.reduce((acc, account) => {
+    const equity = account.equity?.value;
+    if (equity) {
+      const currency = account.currency;
+      acc[currency] = (acc[currency] || 0) + parseFloat(equity);
+    }
+    return acc;
+  }, {} as Record<string, number>);
 
   const totalFills = data.accounts.reduce((sum, acc) => sum + acc.fills, 0);
   const totalPositions = data.accounts.reduce((sum, acc) => sum + acc.open_positions, 0);
@@ -82,7 +81,9 @@ export default function OverviewPage() {
       <div className="metrics-grid">
         <MetricCard
           label="Total equity"
-          value={`$${totalEquity.toLocaleString()}`}
+          value={Object.entries(equityByCurrency)
+            .map(([currency, value]) => `${currency} ${value.toLocaleString()}`)
+            .join(" · ")}
           change={`${data.accounts.length} account${data.accounts.length !== 1 ? "s" : ""}`}
           tone="blue"
           icon={<TrendingUp size={18} />}

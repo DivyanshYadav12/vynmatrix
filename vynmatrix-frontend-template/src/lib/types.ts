@@ -68,6 +68,8 @@ export interface OverviewData {
 
 export interface StrategiesData {
   as_of: string;
+  catalogue: number;
+  released: number;
   strategies: Array<{
     strategy_id: string;
     name: string;
@@ -81,7 +83,6 @@ export interface StrategiesData {
       account_id: number;
       account_name: string | null;
       mode: string;
-      active: boolean;
       autopilot: boolean;
       entries_enabled: boolean;
       exits_enabled: boolean;
@@ -97,8 +98,6 @@ export interface StrategiesData {
       value: string;
     }>;
   }>;
-  catalogue: number;
-  released: number;
 }
 
 export interface PnLData {
@@ -148,7 +147,11 @@ export interface PnLData {
 
 export interface ControlData {
   as_of: string;
-  owner: any;
+  owner: {
+    full_name: string;
+    base_ccy: string;
+    tz: string;
+  };
   accounts: Array<{
     account_id: number;
     config_key: string;
@@ -172,7 +175,6 @@ export interface ControlData {
     strategy_id: string;
     account_id: number;
     mode: string;
-    active: boolean;
     asset_score_threshold: string;
     max_position_pct: string;
     max_total_exposure_pct: string;

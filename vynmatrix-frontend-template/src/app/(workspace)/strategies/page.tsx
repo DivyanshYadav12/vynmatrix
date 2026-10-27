@@ -46,10 +46,15 @@ export default function StrategiesPage() {
     return <div className="empty-state">No strategies available</div>;
   }
 
-  const activeStrategies = data.strategies.filter((s) => s.bindings.some((b) => b.active));
-  const totalPnl = data.strategies.reduce((sum, s) => {
-    return sum + s.realized_pnl.reduce((pnlSum, pnl) => pnlSum + parseFloat(pnl.value), 0);
-  }, 0);
+  const activeStrategies = data.strategies.filter((s) => s.bindings.some((b) => b.mode === "trading"));
+
+  // Calculate total P&L grouped by currency
+  const pnlByCurrency = data.strategies.reduce((acc, strategy) => {
+    strategy.realized_pnl.forEach((pnl) => {
+      acc[pnl.currency] = (acc[pnl.currency] || 0) + parseFloat(pnl.value);
+    });
+    return acc;
+  }, {} as Record<string, number>);
 
   return (
     <>
@@ -62,7 +67,7 @@ export default function StrategiesPage() {
         <div className="metric-card">
           <div className="metric-top"><span>Total strategies</span><Blocks size={17} /></div>
           <div className="metric-value">{data.strategies.length.toString().padStart(2, "0")}</div>
-          <div className="metric-change">Released: {data.strategies.released.toString()}</div>
+          <div className="metric-change">Released: {data.released.toString()}</div>
         </div>
         <div className="metric-card">
           <div className="metric-top"><span>Active bindings</span><TrendingUp size={17} /></div>
@@ -71,12 +76,16 @@ export default function StrategiesPage() {
         </div>
         <div className="metric-card">
           <div className="metric-top"><span>Total P&L</span><ArrowRight size={17} /></div>
-          <div className="metric-value">{totalPnl >= 0 ? `+$${totalPnl.toLocaleString()}` : `-$${Math.abs(totalPnl).toLocaleString()}`}</div>
+          <div className="metric-value">
+            {Object.entries(pnlByCurrency)
+              .map(([currency, value]) => `${value >= 0 ? "+" : ""}${currency} ${value.toLocaleString()}`)
+              .join(" · ")}
+          </div>
           <div className="metric-change">Realized across all strategies</div>
         </div>
         <div className="metric-card">
           <div className="metric-top"><span>Catalogue</span><ArrowRight size={17} /></div>
-          <div className="metric-value">{data.strategies.catalogue.toString()}</div>
+          <div className="metric-value">{data.catalogue.toString()}</div>
           <div className="metric-change">Available strategies</div>
         </div>
       </div>
@@ -124,11 +133,16 @@ export default function StrategiesPage() {
                     <span className="muted-number">{s.bindings.length} binding{s.bindings.length !== 1 ? "s" : ""}</span>
                   </td>
                   <td>
-                    <span className={totalPnl >= 0 ? "positive-number" : "negative-number"}>
-                      {s.realized_pnl.length > 0
-                        ? `$${s.realized_pnl.reduce((sum, pnl) => sum + parseFloat(pnl.value), 0).toLocaleString()}`
-                        : "—"}
-                    </span>
+                    {(() => {
+                      const strategyPnl = s.realized_pnl.reduce((sum, pnl) => sum + parseFloat(pnl.value), 0);
+                      return (
+                        <span className={strategyPnl >= 0 ? "positive-number" : "negative-number"}>
+                          {s.realized_pnl.length > 0
+                            ? `${strategyPnl >= 0 ? "+" : ""}${s.realized_pnl[0]?.currency || ""} ${strategyPnl.toLocaleString()}`
+                            : "—"}
+                        </span>
+                      );
+                    })()}
                   </td>
                   <td>
                     <button className="icon-button" aria-label={`More actions for ${s.name}`}>

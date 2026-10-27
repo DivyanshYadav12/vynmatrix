@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Activity, ArrowRight, TrendingUp } from "lucide-react";
+import { TrendingUp } from "lucide-react";
 import { PageHeader, Panel } from "@/components/ui";
 import { api, ApiError } from "@/lib/api-client";
 import type { PnLData } from "@/lib/types";

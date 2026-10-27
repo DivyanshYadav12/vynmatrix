@@ -45,15 +45,13 @@ async function apiRequest<T>(
 ): Promise<T> {
   const url = `${BACKEND_URL}${endpoint}`;
 
-  const headers: HeadersInit = {
-    "Content-Type": "application/json",
-    ...options.headers,
-  };
+  const headers = new Headers(options.headers);
+  headers.set("Content-Type", "application/json");
 
   // Add admin key from sessionStorage
   const adminKey = getAdminKey();
   if (adminKey) {
-    headers["X-Admin-Key"] = adminKey;
+    headers.set("X-Admin-Key", adminKey);
   }
 
   const response = await fetch(url, {
@@ -87,65 +85,65 @@ export class ApiError extends Error {
  */
 export const api = {
   // Owner UI API endpoints
-  overview: () => apiRequest<any>("/ui/overview"),
-  version: () => apiRequest<any>("/ui/version"),
-  control: () => apiRequest<any>("/ui/control"),
-  strategies: () => apiRequest<any>("/ui/strategies"),
-  pnl: (days: number = 90) => apiRequest<any>(`/ui/pnl?days=${days}`),
+  overview: () => apiRequest<unknown>("/ui/overview"),
+  version: () => apiRequest<unknown>("/ui/version"),
+  control: () => apiRequest<unknown>("/ui/control"),
+  strategies: () => apiRequest<unknown>("/ui/strategies"),
+  pnl: (days: number = 90) => apiRequest<unknown>(`/ui/pnl?days=${days}`),
   fills: (limit: number = 50, before?: string) => {
     const params = new URLSearchParams({ limit: limit.toString() });
     if (before) params.append("before", before);
-    return apiRequest<any>(`/ui/fills?${params.toString()}`);
+    return apiRequest<unknown>(`/ui/fills?${params.toString()}`);
   },
 
   // Binding control (UI-specific)
   createBinding: (data: { strategy_id: string; broker_account_id: number; mode: string }) =>
-    apiRequest<any>("/ui/bindings", {
+    apiRequest<unknown>("/ui/bindings", {
       method: "POST",
       body: JSON.stringify(data),
     }),
-  updateBinding: (bindingId: number, data: { expected: any; changes: any }) =>
-    apiRequest<any>(`/ui/bindings/${bindingId}`, {
+  updateBinding: (bindingId: number, data: { expected: unknown; changes: unknown }) =>
+    apiRequest<unknown>(`/ui/bindings/${bindingId}`, {
       method: "POST",
       body: JSON.stringify(data),
     }),
 
   // Admin API endpoints (to be used selectively)
-  owner: () => apiRequest<any>("/owner"),
-  updateOwner: (data: { expected: any; changes: any }) =>
-    apiRequest<any>("/owner", {
+  owner: () => apiRequest<unknown>("/owner"),
+  updateOwner: (data: { expected: unknown; changes: unknown }) =>
+    apiRequest<unknown>("/owner", {
       method: "PATCH",
       body: JSON.stringify(data),
     }),
-  brokerAccounts: () => apiRequest<any>("/broker-accounts"),
-  onboardBrokerAccount: (data: any) =>
-    apiRequest<any>("/broker-accounts", {
+  brokerAccounts: () => apiRequest<unknown>("/broker-accounts"),
+  onboardBrokerAccount: (data: unknown) =>
+    apiRequest<unknown>("/broker-accounts", {
       method: "POST",
       body: JSON.stringify(data),
     }),
-  updateBrokerAccount: (accountId: number, data: { expected: any; changes: any }) =>
-    apiRequest<any>(`/broker-accounts/${accountId}`, {
+  updateBrokerAccount: (accountId: number, data: { expected: unknown; changes: unknown }) =>
+    apiRequest<unknown>(`/broker-accounts/${accountId}`, {
       method: "PATCH",
       body: JSON.stringify(data),
     }),
-  rotateCredentials: (accountId: number, data: any) =>
-    apiRequest<any>(`/broker-accounts/${accountId}/credentials`, {
+  rotateCredentials: (accountId: number, data: unknown) =>
+    apiRequest<unknown>(`/broker-accounts/${accountId}/credentials`, {
       method: "PUT",
       body: JSON.stringify(data),
     }),
-  strategyConfigs: () => apiRequest<any>("/strategy-configs"),
-  upsertStrategyConfig: (strategyId: string, data: any) =>
-    apiRequest<any>(`/strategy-configs/${strategyId}`, {
+  strategyConfigs: () => apiRequest<unknown>("/strategy-configs"),
+  upsertStrategyConfig: (strategyId: string, data: unknown) =>
+    apiRequest<unknown>(`/strategy-configs/${strategyId}`, {
       method: "PUT",
       body: JSON.stringify(data),
     }),
   deactivateStrategyConfig: (strategyId: string) =>
-    apiRequest<any>(`/strategy-configs/${strategyId}`, {
+    apiRequest<unknown>(`/strategy-configs/${strategyId}`, {
       method: "DELETE",
     }),
-  drawdownMandates: () => apiRequest<any>("/risk-mandates/drawdown"),
+  drawdownMandates: () => apiRequest<unknown>("/risk-mandates/drawdown"),
   upsertDrawdownMandate: (data: { max_drawdown_pct: string }) =>
-    apiRequest<any>("/risk-mandates/drawdown", {
+    apiRequest<unknown>("/risk-mandates/drawdown", {
       method: "PUT",
       body: JSON.stringify(data),
     }),

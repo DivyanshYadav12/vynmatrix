@@ -2,13 +2,15 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Activity, Bell, Blocks, ChevronDown, CircleHelp, Command, LayoutDashboard, Menu, Moon,
   Search, Settings2, ShieldCheck, TrendingUp, X,
 } from "lucide-react";
 import type { ReactNode } from "react";
 import { LockButton } from "./login-modal";
+import { api } from "@/lib/api-client";
+import type { OverviewData } from "@/lib/types";
 
 const primaryNavigation = [
   { label: "Overview", href: "/overview", icon: LayoutDashboard },
@@ -24,6 +26,21 @@ export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [overview, setOverview] = useState<OverviewData | null>(null);
+  const [backendConnected, setBackendConnected] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    async function checkBackend() {
+      try {
+        const data = await api.overview();
+        setOverview(data);
+        setBackendConnected(true);
+      } catch {
+        setBackendConnected(false);
+      }
+    }
+    checkBackend();
+  }, []);
 
   function navLink(item: (typeof primaryNavigation)[number] | (typeof platformNavigation)[number]) {
     const active = pathname === item.href || (item.href !== "/overview" && pathname.startsWith(`${item.href}/`));
@@ -51,7 +68,17 @@ export function AppShell({ children }: { children: ReactNode }) {
         <div className="nav-section-label platform-label">PLATFORM</div>
         <nav className="nav-list">{platformNavigation.map(navLink)}</nav>
         <div className="sidebar-spacer" />
-        <div className="risk-mini-card"><div className="risk-mini-title"><span className="health-dot" /> ENGINE STATUS</div><strong>All systems operational</strong><p>API · Database · Workers</p><div className="health-bars"><i /><i /><i /><i /><i /><i /><i /><i /><i /><i /><i /><i /></div></div>
+        <div className="risk-mini-card">
+          <div className="risk-mini-title">
+            <span className={`health-dot ${backendConnected === true ? "health-ok" : backendConnected === false ? "health-error" : "health-unknown"}`} />
+            ENGINE STATUS
+          </div>
+          <strong>
+            {backendConnected === true ? "All systems operational" : backendConnected === false ? "Backend unavailable" : "Checking..."}
+          </strong>
+          <p>API · Database · Workers</p>
+          <div className="health-bars"><i /><i /><i /><i /><i /><i /><i /><i /><i /><i /><i /><i /></div>
+        </div>
         <div className="sidebar-footer"><div className="avatar">DY</div><div className="user-copy"><strong>Workspace owner</strong><span>Administrator</span></div><button className="icon-button" aria-label="Help"><CircleHelp size={17} /></button></div>
       </aside>
       <div className="main-column">
@@ -61,7 +88,10 @@ export function AppShell({ children }: { children: ReactNode }) {
           <div className="topbar-actions">
             <button className="search-trigger" onClick={() => setSearchOpen(!searchOpen)}><Search size={15} /><span>Search anything...</span><kbd><Command size={11} /> K</kbd></button>
             <span className="topbar-divider" />
-            <span className="mode-pill"><span /> PAPER MODE</span>
+            <span className="mode-pill">
+              <span className={overview?.safety.execution_mode === "paper" && !overview.safety.allow_live ? "paper-dot" : ""} />
+              {overview?.safety.execution_mode === "paper" && !overview.safety.allow_live ? "PAPER MODE" : overview?.safety.execution_mode.toUpperCase() || "UNKNOWN"}
+            </span>
             <button className="icon-button" aria-label="Notifications"><Bell size={17} /><i className="notification-dot" /></button>
             <LockButton />
             <button className="icon-button theme-button" aria-label="Theme"><Moon size={17} /></button>

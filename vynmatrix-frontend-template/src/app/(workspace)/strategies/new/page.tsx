@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { ArrowLeft, Check, ChevronDown, Code2, FileCode2, Play, Save, ShieldCheck, Sparkles, WandSparkles } from "lucide-react";
+import { ArrowLeft, Check, ChevronDown, Code2, FileCode2, Save, ShieldCheck, Sparkles, WandSparkles } from "lucide-react";
 import { PageHeader, Panel, StatusBadge } from "@/components/ui";
 
 const starterCode = `from vynmatrix import Strategy\nfrom vynmatrix.indicators import EMA, RSI\n\nclass EmaMomentum(Strategy):\n    def initialize(self):\n        self.fast_ema = EMA(12)\n        self.slow_ema = EMA(26)\n        self.rsi = RSI(14)\n\n    def on_data(self, bar):\n        # Draft logic: validate indicator API before running.\n        if self.fast_ema.crossed_above(self.slow_ema):\n            if self.rsi.value < 70:\n                self.emit_signal(\"BUY\")\n\n        elif self.fast_ema.crossed_below(self.slow_ema):\n            self.emit_signal(\"SELL\")`;

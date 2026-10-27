@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ShieldCheck, User, Database, TrendingUp } from "lucide-react";
+import { Database, TrendingUp } from "lucide-react";
 import { PageHeader, Panel } from "@/components/ui";
 import { api, ApiError } from "@/lib/api-client";
 import type { ControlData } from "@/lib/types";
@@ -64,16 +64,16 @@ export default function SettingsPage() {
           <Panel title="Owner profile" subtitle="Account owner information">
             <div className="form-grid">
               <div className="form-field">
-                <label>Display name</label>
-                <input type="text" defaultValue={data.owner?.display_name || ""} disabled />
+                <label>Full name</label>
+                <input type="text" defaultValue={data.owner?.full_name || ""} disabled />
               </div>
               <div className="form-field">
                 <label>Base currency</label>
-                <input type="text" defaultValue={data.owner?.base_currency || ""} disabled />
+                <input type="text" defaultValue={data.owner?.base_ccy || ""} disabled />
               </div>
               <div className="form-field">
                 <label>Timezone</label>
-                <input type="text" defaultValue={data.owner?.timezone || ""} disabled />
+                <input type="text" defaultValue={data.owner?.tz || ""} disabled />
               </div>
             </div>
             <div className="info-note" style={{ marginTop: "16px" }}>
@@ -149,13 +149,13 @@ export default function SettingsPage() {
                       <td>Account #{binding.account_id}</td>
                       <td><span className="version-code">{binding.mode}</span></td>
                       <td>
-                        {binding.active ? (
+                        {binding.mode === "trading" ? (
                           <span className="positive-number">✓ Active</span>
                         ) : (
                           <span className="muted-number">Inactive</span>
                         )}
                       </td>
-                      <td>{binding.max_position_pct}%</td>
+                      <td>{(parseFloat(binding.max_position_pct) * 100).toFixed(1)}%</td>
                     </tr>
                   ))}
                 </tbody>
