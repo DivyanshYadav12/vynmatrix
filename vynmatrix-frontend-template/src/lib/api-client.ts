@@ -3,6 +3,8 @@
  * Handles authentication, error handling, and typed requests
  */
 
+import type { OverviewData, VersionData, ControlData, StrategiesData, PnLData, FillsData } from "./types";
+
 const BACKEND_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "/api";
 
 /**
@@ -85,15 +87,15 @@ export class ApiError extends Error {
  */
 export const api = {
   // Owner UI API endpoints
-  overview: () => apiRequest<unknown>("/ui/overview"),
-  version: () => apiRequest<unknown>("/ui/version"),
-  control: () => apiRequest<unknown>("/ui/control"),
-  strategies: () => apiRequest<unknown>("/ui/strategies"),
-  pnl: (days: number = 90) => apiRequest<unknown>(`/ui/pnl?days=${days}`),
+  overview: () => apiRequest<OverviewData>("/ui/overview"),
+  version: () => apiRequest<VersionData>("/ui/version"),
+  control: () => apiRequest<ControlData>("/ui/control"),
+  strategies: () => apiRequest<StrategiesData>("/ui/strategies"),
+  pnl: (days: number = 90) => apiRequest<PnLData>(`/ui/pnl?days=${days}`),
   fills: (limit: number = 50, before?: string) => {
     const params = new URLSearchParams({ limit: limit.toString() });
     if (before) params.append("before", before);
-    return apiRequest<unknown>(`/ui/fills?${params.toString()}`);
+    return apiRequest<FillsData>(`/ui/fills?${params.toString()}`);
   },
 
   // Binding control (UI-specific)
